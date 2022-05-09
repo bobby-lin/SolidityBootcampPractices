@@ -48,13 +48,8 @@ contract GasContract is Ownable, Constants {
     event AddedToWhitelist(address userAddress, uint256 tier);
 
     modifier onlyAdminOrOwner() {
-        if (checkForAdmin(msg.sender)) {
-            require(
-                checkForAdmin(msg.sender),
-                "Gas Contract Only Admin Check-  Caller not admin"
-            );
-            _;
-        } else if (msg.sender == contractOwner) {
+        bool isAdmin = checkForAdmin(msg.sender);
+        if (isAdmin || msg.sender == contractOwner) {
             _;
         } else {
             revert(
@@ -82,12 +77,9 @@ contract GasContract is Ownable, Constants {
                 administrators[ii] = _admins[ii];
                 if (_admins[ii] == msg.sender) {
                     balances[msg.sender] = totalSupply;
+                    emit supplyChanged(_admins[ii], totalSupply);
                 } else {
                     balances[_admins[ii]] = 0;
-                }
-                if (_admins[ii] == msg.sender) {
-                    emit supplyChanged(_admins[ii], totalSupply);
-                } else if (_admins[ii] != msg.sender) {
                     emit supplyChanged(_admins[ii], 0);
                 }
             }
@@ -102,13 +94,12 @@ contract GasContract is Ownable, Constants {
     }
 
     function checkForAdmin(address _user) public view returns (bool admin_) {
-        bool admin = false;
         for (uint256 ii = 0; ii < administrators.length; ii++) {
             if (administrators[ii] == _user) {
-                admin = true;
+                return true;
             }
         }
-        return admin;
+        return false;
     }
 
     function balanceOf(address _user) public view returns (uint256 balance_) {
@@ -117,13 +108,15 @@ contract GasContract is Ownable, Constants {
     }
 
     function getTradingMode() public view returns (bool mode_) {
-        bool mode = false;
-        if (tradeFlag == 1 || dividendFlag == 1) {
+        return true;
+        /**bool mode = false;
+        /if (tradeFlag == 1 || dividendFlag == 1) {
             mode = true;
         } else {
             mode = false;
         }
         return mode;
+        **/
     }
 
     function addHistory(address _updateAddress, bool _tradeMode)
@@ -136,10 +129,7 @@ contract GasContract is Ownable, Constants {
         history.updatedBy = _updateAddress;
         paymentHistory.push(history);
         bool[] memory status = new bool[](tradePercent);
-        for (uint256 i = 0; i < tradePercent; i++) {
-            status[i] = true;
-        }
-        return ((status[0] == true), _tradeMode);
+        return (true, _tradeMode);
     }
 
     function getPayments(address _user)
@@ -179,11 +169,7 @@ contract GasContract is Ownable, Constants {
         payment.recipientName = _name;
         payment.paymentID = ++paymentCounter;
         payments[msg.sender].push(payment);
-        bool[] memory status = new bool[](tradePercent);
-        for (uint256 i = 0; i < tradePercent; i++) {
-            status[i] = true;
-        }
-        return (status[0] == true);
+        return true;
     }
 
     function updatePayment(
@@ -233,13 +219,13 @@ contract GasContract is Ownable, Constants {
         );
         whitelist[_userAddrs] = _tier;
         if (_tier > 3) {
-            whitelist[_userAddrs] -= _tier;
+            //whitelist[_userAddrs] -= _tier;
             whitelist[_userAddrs] = 3;
         } else if (_tier == 1) {
-            whitelist[_userAddrs] -= _tier;
+            //whitelist[_userAddrs] -= _tier;
             whitelist[_userAddrs] = 1;
         } else if (_tier > 0 && _tier < 3) {
-            whitelist[_userAddrs] -= _tier;
+            // whitelist[_userAddrs] -= _tier;
             whitelist[_userAddrs] = 2;
         }
 
