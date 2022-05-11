@@ -1,4 +1,4 @@
-const { expect, use } = require("chai");
+const { expect, use, assert } = require("chai");
 const { ethers } = require("hardhat");
 
 const { solidity } = require("ethereum-waffle");
@@ -34,7 +34,43 @@ describe("DeFi", () => {
     DeFi_Instance = await DeFi.deploy();
   });
 
-  it("should check transfer succeeded", async () => {});
-  it("should sendDAI to contract", async () => {});
-  it("should make a swap", async () => {});
+  it("should check transfer succeeded", async () => {
+    const whale = await ethers.getSigner(
+      "0x503828976D22510aad0201ac7EC88293211D23Da"
+    );
+
+    let transactionStatus = await DAI_TokenContract.connect(whale).transfer(
+      DeFi_Instance.address,
+      BigInt(INITIAL_AMOUNT)
+    )
+    assert(await transactionStatus.wait() != null)
+  });
+
+  it("should sendDAI to contract", async () => {
+    const whale = await ethers.getSigner(
+      "0x503828976D22510aad0201ac7EC88293211D23Da"
+    );
+
+    let current_DAI_Balance = await DAI_TokenContract.balanceOf("0x503828976D22510aad0201ac7EC88293211D23Da");
+
+    await DAI_TokenContract.connect(whale).transfer(
+      DeFi_Instance.address,
+      BigInt(INITIAL_AMOUNT)
+    )
+
+    let finalBalance = await DAI_TokenContract.balanceOf("0x503828976D22510aad0201ac7EC88293211D23Da");
+    let expectedValue = current_DAI_Balance.sub(BigInt(INITIAL_AMOUNT));
+    // Useful Docs: https://docs.ethers.io/v5/api/utils/bignumber/
+
+    // console.log(current_DAI_Balance, finalBalance, expectedValue);
+    expect(parseInt(finalBalance)).to.lessThanOrEqual(parseInt(expectedValue));
+  });
+
+  it("should make a swap", async () => {
+    let current_USDC_balance = await USDC_TokenContract.balanceOf(owner.address);
+    await DeFi_Instance.swapDAItoUSDC(BigInt(INITIAL_AMOUNT)); // Must use BigInt as value for swap
+    let finalBalance = await USDC_TokenContract.balanceOf(owner.address);
+    //console.log(current_USDC_balance, finalBalance)
+    expect(parseInt(finalBalance)).to.equal(parseInt(current_USDC_balance) + 998)
+  });
 });
