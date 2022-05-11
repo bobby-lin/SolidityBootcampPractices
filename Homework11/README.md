@@ -14,5 +14,11 @@ npx hardhat help
 Go to https://infura.io/ and create a new project and select Ethereum as the product. In the project's settings,find the endpoints for mainnet. Copy the https API key. You're going to connect to the Infura node to fork the mainnet.
 
 Run `$ npx ganache-cli --fork https://mainnet.infura.io/v3/{infura_project_id}` --unlock 0x503828976D22510aad0201ac7EC88293211D23Da 
+Run `$ npx ganache-cli --fork https://eth-mainnet.alchemy/v2/{alchemy_api_key}` --unlock 0x503828976D22510aad0201ac7EC88293211D23Da 
 
 If local port is not 8545 add -p {port_number}`
+
+## Run tests
+```
+$ npx hardhat test --network fork
+```
